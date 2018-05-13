@@ -26,32 +26,38 @@ class LeastSquaresLinearRegression(val observations: DenseMatrix[Double], val la
 		}
 		
 		val observationsWithOffsetsTraspose = observationsWithOffsets.get.t
-		val wls = inv(observationsWithOffsetsTraspose *:* observationsWithOffsets.get) *:* observationsWithOffsetsTraspose * labels
 		
-		Some(wls)
+		try {
+			val wls = inv(observationsWithOffsetsTraspose * observationsWithOffsets.get) * observationsWithOffsetsTraspose * labels
+			return Some(wls)
+		} catch {
+			case singular: breeze.linalg.MatrixSingularException => singular.printStackTrace()
+		}
+		
+		None
 	}
 	
 	private def computeObservationsWithOffsets(): Option[DenseMatrix[Double]] = {
 		
-		if (observations.cols < observations.rows) {
+		if (observations.cols < observations.rows + 1) {
 			return None
 		}
 		
 		val owo = DenseMatrix.zeros[Double](observations.rows + 1, observations.cols)
 		
-		for (i <- 0 to observations.cols) {
+		for (i <- 0 until observations.cols) {
 			owo(::, i) := computeObservationWithOffset(observations(::,i), offset)
 		}
 		
 		Some(owo)
 	}
 	
-	private def computeObservationWithOffset(observation: DenseVector[Double], firstElement: Double): DenseVector[Double] = {
+	private def computeObservationWithOffset(observation: DenseVector[Double], offset: Double): DenseVector[Double] = {
 		
 		val columnArray = new Array[Double](observation.length + 1)
-		columnArray(0) = firstElement
+		columnArray(0) = offset
 		
-		for (i <- 0 to observation.length) {
+		for (i <- 0 until observation.length) {
 			columnArray(i + 1) = observation(i)
 		}
 		
