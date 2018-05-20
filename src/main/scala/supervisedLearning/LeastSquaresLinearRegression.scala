@@ -85,7 +85,6 @@ class LeastSquaresLinearRegression(val observations: DenseMatrix[Double], val la
 	private val weights: Option[DenseVector[Double]] = computeWeights()
 }
 
-object LeastSquaresLinearRegression
-{
+object LeastSquaresLinearRegression {
 	val OFFSET: Double = 1
 }
