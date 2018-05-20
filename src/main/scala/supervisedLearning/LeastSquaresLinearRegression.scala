@@ -2,6 +2,8 @@ package supervisedLearning
 
 import breeze.linalg.{DenseMatrix, DenseVector, Transpose, inv}
 
+import scala.util.Try
+
 /**
   * Given a set of observations and a label associated with each, compute a hyperplane through the observation
   * dimensions such that the sum of the squares of the difference between each observation and its closest point on the
@@ -9,13 +11,8 @@ import breeze.linalg.{DenseMatrix, DenseVector, Transpose, inv}
   *
   * @param observations - observed data points from some problem domain
   * @param labels - labels associated with each observation
-  * @param offset - a value that may be used to shift the computed hyperplane
   */
-class LeastSquaresLinearRegression(
-		val observations: DenseMatrix[Double],
-		val labels: DenseVector[Double],
-		val offset: Double = LeastSquaresLinearRegression.DEFAULT_OFFSET)
-{
+class LeastSquaresLinearRegression(val observations: DenseMatrix[Double], val labels: DenseVector[Double]) {
 	
 	// Public Methods
 	/**
@@ -35,7 +32,7 @@ class LeastSquaresLinearRegression(
 			return None
 		}
 		
-		Some(computeObservationWithOffset(observation.t, LeastSquaresLinearRegression.DEFAULT_OFFSET) dot weights.get)
+		Some(computeObservationWithOffset(observation.t, LeastSquaresLinearRegression.OFFSET) dot weights.get)
 	}
 	
 	// Private Methods
@@ -45,14 +42,15 @@ class LeastSquaresLinearRegression(
 			return None
 		}
 		
-		val observationsWithOffsetsTraspose = observationsWithOffsets.get.t
+		val observationsWithOffsetsTranspose = observationsWithOffsets.get.t
+		val invertedObservations = invertMatrix(observationsWithOffsetsTranspose * observationsWithOffsets.get) getOrElse (return None)
+		val wls = invertedObservations * observationsWithOffsetsTranspose * labels
 		
-		try {
-			val wls = inv(observationsWithOffsetsTraspose * observationsWithOffsets.get) * observationsWithOffsetsTraspose * labels
-			Some(wls)
-		} catch {
-			case singular: breeze.linalg.MatrixSingularException => None
-		}
+		Some(wls)
+	}
+	
+	private def invertMatrix(matrix: DenseMatrix[Double]): Try[DenseMatrix[Double]] = {
+		Try(inv(matrix))
 	}
 	
 	private def computeObservationsWithOffsets(): Option[DenseMatrix[Double]] = {
@@ -64,7 +62,7 @@ class LeastSquaresLinearRegression(
 		val owo = DenseMatrix.zeros[Double](observations.rows, observations.cols + 1)
 		
 		for (i <- 0 until observations.rows) {
-			owo(i, ::) := computeObservationWithOffset(observations(i,::), offset).t
+			owo(i, ::) := computeObservationWithOffset(observations(i,::), LeastSquaresLinearRegression.OFFSET).t
 		}
 		
 		Some(owo)
@@ -89,5 +87,5 @@ class LeastSquaresLinearRegression(
 
 object LeastSquaresLinearRegression
 {
-	val DEFAULT_OFFSET: Double = 1
+	val OFFSET: Double = 1
 }
