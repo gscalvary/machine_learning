@@ -27,6 +27,15 @@ class LeastSquaresLinearRegressionSpec extends FunSuite {
 		assert(linearLeastSquaresRegressor.getLabel(DenseVector.zeros(5)).isEmpty)
 	}
 	
+	test("Labels are not returned if the new observation is not of the same dimensions as the training set.") {
+		
+		val observations: DenseMatrix[Double] = DenseMatrix(1.0, 2.0, 3.0, 4.0, 5.0)
+		val labels: DenseVector[Double] = DenseVector(2.0, 4.0, 5.0, 4.0, 5.0)
+		val linearLeastSquaresRegressor: LeastSquaresLinearRegression = new LeastSquaresLinearRegression(observations, labels)
+		
+		assert(linearLeastSquaresRegressor.getLabel(DenseVector.zeros(6)).isEmpty)
+	}
+	
 	
 	test("Labels are computed correctly for single dimension input.") {
 		

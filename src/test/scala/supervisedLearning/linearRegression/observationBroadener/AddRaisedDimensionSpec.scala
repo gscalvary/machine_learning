@@ -12,7 +12,8 @@ class AddRaisedDimensionSpec extends FunSuite {
 		val length: Int = 3
 		val observation: DenseVector[Double] = DenseVector.zeros(length)
 		val index: Int = -1
-		val newObservation: DenseVector[Double] = AddRaisedDimension.getExtendedObservation(index, observation, power)
+		val addRaisedDimension = new AddRaisedDimension(index, power)
+		val newObservation: DenseVector[Double] = addRaisedDimension.getExtendedObservation(observation)
 		
 		assert(newObservation.length == length)
 	}
@@ -22,27 +23,8 @@ class AddRaisedDimensionSpec extends FunSuite {
 		val length: Int = 3
 		val observation: DenseVector[Double] = DenseVector.zeros(length)
 		val index: Int = 3
-		val newObservation: DenseVector[Double] = AddRaisedDimension.getExtendedObservation(index, observation, power)
-		
-		assert(newObservation.length == length)
-	}
-	
-	test("If the power argument is not passed then the observation is not modified.") {
-		
-		val length: Int = 3
-		val observation: DenseVector[Double] = DenseVector.zeros(length)
-		val index: Int = 3
-		val newObservation: DenseVector[Double] = AddRaisedDimension.getExtendedObservation(index, observation)
-		
-		assert(newObservation.length == length)
-	}
-	
-	test("If more than one power argument is passed then the observation is not modified.") {
-		
-		val length: Int = 3
-		val observation: DenseVector[Double] = DenseVector.zeros(length)
-		val index: Int = 3
-		val newObservation: DenseVector[Double] = AddRaisedDimension.getExtendedObservation(index, observation, power, power)
+		val addRaisedDimension = new AddRaisedDimension(index, power)
+		val newObservation: DenseVector[Double] = addRaisedDimension.getExtendedObservation(observation)
 		
 		assert(newObservation.length == length)
 	}
@@ -52,7 +34,8 @@ class AddRaisedDimensionSpec extends FunSuite {
 		val length: Int = 1
 		val observation: DenseVector[Double] = DenseVector.fill(length){2.0}
 		val index: Int = 0
-		val newObservation: DenseVector[Double] = AddRaisedDimension.getExtendedObservation(index, observation, power)
+		val addRaisedDimension = new AddRaisedDimension(index, power)
+		val newObservation: DenseVector[Double] = addRaisedDimension.getExtendedObservation(observation)
 		
 		assert(newObservation.length == length + 1)
 		assert(newObservation(0) == 2.0)
