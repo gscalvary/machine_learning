@@ -3,6 +3,7 @@ package supervisedLearning.linearRegression
 import breeze.linalg.{DenseMatrix, DenseVector}
 import org.scalactic.{Equality, TolerantNumerics}
 import org.scalatest.FunSuite
+import supervisedLearning.linearRegression.observationBroadener.{AddRaisedDimension, ObservationDimensionsExtender}
 
 class LeastSquaresLinearRegressionSpec extends FunSuite {
 	
@@ -53,5 +54,15 @@ class LeastSquaresLinearRegressionSpec extends FunSuite {
 		val linearLeastSquaresRegressor: LeastSquaresLinearRegression = new LeastSquaresLinearRegression(observations, labels)
 
 		assert(linearLeastSquaresRegressor.getLabel(DenseVector(8.0, 2.0)).get === 7.0)
+	}
+	
+	test("Labels are computed correctly for input with a broadener.") {
+		
+		val observations: DenseMatrix[Double] = DenseMatrix(0.0, 1.0, 2.0, 3.0, 4.0)
+		val labels: DenseVector[Double] = DenseVector(0.0, 1.0, 4.0, 9.0, 16.0)
+		val broadeners: List[ObservationDimensionsExtender] = List(new AddRaisedDimension(0, 2))
+		val linearLeastSquaresRegressor: LeastSquaresLinearRegression = new LeastSquaresLinearRegression(observations, labels, broadeners)
+		
+		assert(linearLeastSquaresRegressor.getLabel(DenseVector(3.0)).get === 9.0)
 	}
 }
