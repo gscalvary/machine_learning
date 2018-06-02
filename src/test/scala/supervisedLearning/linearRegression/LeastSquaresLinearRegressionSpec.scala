@@ -1,4 +1,4 @@
-package supervisedLearning
+package supervisedLearning.linearRegression
 
 import breeze.linalg.{DenseMatrix, DenseVector}
 import org.scalactic.{Equality, TolerantNumerics}
