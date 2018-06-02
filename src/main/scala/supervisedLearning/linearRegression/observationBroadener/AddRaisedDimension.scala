@@ -4,7 +4,9 @@ import breeze.linalg.DenseVector
 object AddRaisedDimension extends CreatesObservationDimension {
 	
 	/**
-	  *
+	  * Given an index, an observation and a power create a new observation that adds a new dimension to the given
+	  * observation by taking its dimension, retrieved using the index, and raising it to the given power.
+	  * 
 	  * @param index a 0-based index used to determine which dimension of the observation should be used as a basis for
 	  *              the new dimension
 	  * @param observation an observation to which we would like to add a dimension
