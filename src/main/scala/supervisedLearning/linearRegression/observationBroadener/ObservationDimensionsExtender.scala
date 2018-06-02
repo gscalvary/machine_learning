@@ -2,7 +2,12 @@ package supervisedLearning.linearRegression.observationBroadener
 
 import breeze.linalg.DenseVector
 
-abstract class ExtendObservationDimensions(val index: Int) {
+/**
+  * An abstract class that should be extended by all observation broadeners.
+  *
+  * @param index an integer denoting which dimension of an observation should be used as a basis for new dimension creation
+  */
+abstract class ObservationDimensionsExtender(val index: Int) {
 	
 	/**
 	  * The lone abstract method that needs to be implemented by an extending class.
