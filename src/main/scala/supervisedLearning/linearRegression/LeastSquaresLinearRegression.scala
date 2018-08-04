@@ -1,6 +1,7 @@
 package supervisedLearning.linearRegression
 
 import breeze.linalg.{DenseMatrix, DenseVector, inv}
+import breeze.stats.variance
 import supervisedLearning.linearRegression.observationBroadener.ObservationDimensionsExtender
 
 import scala.util.Try
@@ -16,10 +17,11 @@ import scala.util.Try
   */
 class LeastSquaresLinearRegression(val observations: DenseMatrix[Double], val labels: DenseVector[Double], val broadeners: List[ObservationDimensionsExtender]) {
 	
-	//Auxiliary Constructor
+	// Auxiliary Constructor
 	def this(observations: DenseMatrix[Double], labels: DenseVector[Double]) {
 		this(observations, labels, List.empty)
 	}
+	
 	
 	// Public Methods
 	/**
@@ -44,6 +46,14 @@ class LeastSquaresLinearRegression(val observations: DenseMatrix[Double], val la
 		Some(computeObservationWithOffset(broadenedObservation) dot weights.get)
 	}
 	
+	/**
+	  * Get the covariance matrix.
+	  *
+	  * @return the covariance between observation attributes
+	  */
+	def getCovariance: Option[DenseMatrix[Double]] = _covariance
+	
+	
 	// Private Methods
 	/**
 	  * Use the magic of linear algebra to create weighting factors for each dimension of the augmented observations
@@ -53,15 +63,30 @@ class LeastSquaresLinearRegression(val observations: DenseMatrix[Double], val la
 	  */
 	private def computeWeights(): Option[DenseVector[Double]] = {
 		
-		if (observationsWithOffsets.isEmpty) {
+		if (observationsWithOffsetsTranspose.isEmpty || invertedObservations.isEmpty) {
 			return None
 		}
 		
-		val observationsWithOffsetsTranspose = observationsWithOffsets.get.t
-		val invertedObservations = invertMatrix(observationsWithOffsetsTranspose * observationsWithOffsets.get) getOrElse (return None)
-		val wls = invertedObservations * observationsWithOffsetsTranspose * labels
+		val wls = invertedObservations.get * observationsWithOffsetsTranspose.get * labels
 		
 		Some(wls)
+	}
+	
+	/**
+	  * Compute the covariance of the weights.
+	  *
+	  * @return the covariance of the weights to each other
+	  */
+	private def computeCovariance(): Option[DenseMatrix[Double]] = {
+		
+		if (invertedObservations.isEmpty) {
+			return None
+		}
+		
+		val labelVariance: Double = variance(labels)
+		val covariance: DenseMatrix[Double] = labelVariance * invertedObservations.get
+		
+		Some(covariance)
 	}
 	
 	/**
@@ -154,9 +179,43 @@ class LeastSquaresLinearRegression(val observations: DenseMatrix[Double], val la
 		DenseVector(row)
 	}
 	
+	/**
+	  * Compute (X'X) inverted.
+	  *
+	  * @return None or inverted observations
+	  */
+	private def computeInvertedObservations(): Option[DenseMatrix[Double]] = {
+		
+		if (observationsWithOffsets.isEmpty) {
+			return None
+		}
+		
+		val invertedObservations = invertMatrix(observationsWithOffsetsTranspose.get * observationsWithOffsets.get) getOrElse (return None)
+		
+		Some(invertedObservations)
+	}
+	
+	/**
+	  * Transpose a given matrix.
+	  *
+	  * @param matrix the matrix to be transposed
+	  * @return None or the transposed matrix
+	  */
+	private def transposeMatrix(matrix: Option[DenseMatrix[Double]]): Option[DenseMatrix[Double]] = {
+		
+		if (matrix.isEmpty) {
+			return None
+		}
+		
+		Some(matrix.get.t)
+	}
+	
 	// Private Fields
 	private val observationsWithOffsets: Option[DenseMatrix[Double]] = computeObservationsWithOffsets(broadenObservations())
+	private val observationsWithOffsetsTranspose: Option[DenseMatrix[Double]] = transposeMatrix(observationsWithOffsets)
+	private val invertedObservations: Option[DenseMatrix[Double]] = computeInvertedObservations()
 	private val weights: Option[DenseVector[Double]] = computeWeights()
+	private val _covariance: Option[DenseMatrix[Double]] = computeCovariance()
 }
 
 object LeastSquaresLinearRegression {
